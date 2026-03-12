@@ -29,6 +29,7 @@ struct TabBarView: View {
             .buttonStyle(.borderless)
             .help("Toggle Thumbnail Strip")
         }
+        .frame(width: 30)
     }
     
     private var tabScrollView: some View {
