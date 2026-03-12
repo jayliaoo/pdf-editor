@@ -41,23 +41,17 @@ class AppViewModel: ObservableObject {
 
     
     func deleteSelectedPages() {
-        guard let wrapper = selectedDocument,
-              !wrapper.selectedPages.isEmpty else { return }
-        
+        guard let wrapper = selectedDocument else { return }
         _ = PDFService.deletePages(from: wrapper.document, indices: wrapper.selectedPages)
         wrapper.selectedPages.removeAll()
-        wrapper.isModified = true
-        wrapper.objectWillChange.send()
-        objectWillChange.send()
+        wrapper.documentVersion += 1
     }
     
     func deletePage(at index: Int) {
         guard let wrapper = selectedDocument else { return }
-        
         _ = PDFService.deletePages(from: wrapper.document, indices: [index])
+        wrapper.documentVersion += 1
         wrapper.isModified = true
-        wrapper.objectWillChange.send()
-        objectWillChange.send()
     }
     
     func rotatePage(at index: Int, degrees: Int) {
@@ -435,6 +429,7 @@ class PDFDocumentWrapper: ObservableObject, Identifiable {
     @Published var isModified: Bool = false
     @Published var selectedPages: Set<Int> = []
     @Published var currentPageIndex: Int = 0
+    @Published var documentVersion: Int = 0
     
     var fileName: String {
         url.lastPathComponent

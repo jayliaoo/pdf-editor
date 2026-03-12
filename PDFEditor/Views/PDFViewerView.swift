@@ -17,7 +17,7 @@ struct PDFViewerView: View {
                     
                     if showThumbnails {
                         ThumbnailStripView(
-                            document: wrapper.document, 
+                            wrapper: wrapper,
                             currentPage: $wrapper.currentPageIndex,
                             selectedPages: $wrapper.selectedPages
                         )
@@ -124,16 +124,16 @@ struct PDFKitView: NSViewRepresentable {
 }
 
 struct ThumbnailStripView: View {
-    let document: PDFDocument
+    @ObservedObject var wrapper: PDFDocumentWrapper
     @Binding var currentPage: Int
     @Binding var selectedPages: Set<Int>
     
     var body: some View {
         ScrollView {
             LazyVStack(spacing: 8) {
-                ForEach(0..<document.pageCount, id: \.self) { index in
+                ForEach(0..<wrapper.document.pageCount, id: \.self) { index in
                     ThumbnailItem(
-                        document: document,
+                        wrapper: wrapper,
                         pageIndex: index,
                         isSelected: index == currentPage || selectedPages.contains(index),
                         isMultiSelected: selectedPages.contains(index)
@@ -149,7 +149,7 @@ struct ThumbnailStripView: View {
 }
 
 struct ThumbnailItem: View {
-    let document: PDFDocument
+    @ObservedObject var wrapper: PDFDocumentWrapper
     let pageIndex: Int
     let isSelected: Bool
     let isMultiSelected: Bool
@@ -184,6 +184,9 @@ struct ThumbnailItem: View {
         .onAppear {
             loadThumbnail()
         }
+        .onChange(of: wrapper.documentVersion) { _ in
+            loadThumbnail()
+        }
         .contextMenu {
             Button("Delete") {
                 appViewModel.deletePage(at: pageIndex)
@@ -212,7 +215,7 @@ struct ThumbnailItem: View {
     }
     
     private func loadThumbnail() {
-        guard let page = document.page(at: pageIndex) else { return }
+        guard let page = wrapper.document.page(at: pageIndex) else { return }
         
         let thumbnailSize = NSSize(width: 100, height: 141)
         let thumbnail = page.thumbnail(of: thumbnailSize, for: .mediaBox)
