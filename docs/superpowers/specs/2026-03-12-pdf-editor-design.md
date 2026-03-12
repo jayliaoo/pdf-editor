@@ -80,6 +80,10 @@
 - Extract as PDF
 - Rotate 90° Clockwise
 - Rotate 90° Counter-clockwise
+- Rotate 180°
+
+**Multi-select Operations**
+- Delete, Extract, and Rotate operations apply to all selected pages
 
 **Menu Structure**
 ```
@@ -116,6 +120,7 @@ Help
 
 - **Document Model**: PDFDocument (PDFKit)
 - **Auto-save**: No auto-save, explicit save required
+- **Unsaved Changes**: Prompt user when closing tab/window with unsaved changes: "Do you want to save changes to [filename]?"
 - **File format**: Standard PDF (.pdf)
 - **Thumbnail cache**: In-memory, regenerated on page change
 
@@ -136,7 +141,7 @@ Help
 
 ```
 ├── Models/
-│   ├── PDFDocument+Extensions.swift
+│   ├── PDFDocument+Extensions.swift  (helper methods for PDF operations)
 │   └── PageThumbnail.swift
 ├── ViewModels/
 │   ├── DocumentViewModel.swift
