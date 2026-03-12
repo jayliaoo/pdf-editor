@@ -47,6 +47,8 @@ class AppViewModel: ObservableObject {
         _ = PDFService.deletePages(from: wrapper.document, indices: wrapper.selectedPages)
         wrapper.selectedPages.removeAll()
         wrapper.isModified = true
+        wrapper.objectWillChange.send()
+        objectWillChange.send()
     }
     
     func deletePage(at index: Int) {
@@ -54,6 +56,8 @@ class AppViewModel: ObservableObject {
         
         _ = PDFService.deletePages(from: wrapper.document, indices: [index])
         wrapper.isModified = true
+        wrapper.objectWillChange.send()
+        objectWillChange.send()
     }
     
     func rotatePage(at index: Int, degrees: Int) {
