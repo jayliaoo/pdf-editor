@@ -30,15 +30,7 @@ class PDFService {
     static func addImageAsPage(to document: PDFDocument, imageURL: URL, at index: Int?) -> Bool {
         guard let image = NSImage(contentsOf: imageURL) else { return false }
         
-        guard let tiffData = image.tiffRepresentation,
-              let bitmap = NSBitmapImageRep(data: tiffData),
-              let cgImage = bitmap.cgImage else { return false }
-        
-        let pageWidth = CGFloat(cgImage.width)
-        let pageHeight = CGFloat(cgImage.height)
-        let pageBounds = CGRect(x: 0, y: 0, width: pageWidth, height: pageHeight)
-        
-        let newPage = PDFPage()
+        guard let newPage = PDFPage(image: image) else { return false }
         
         if let insertIndex = index, insertIndex >= 0 && insertIndex <= document.pageCount {
             document.insert(newPage, at: insertIndex)
@@ -49,7 +41,7 @@ class PDFService {
         }
     }
     
-    static func addPagesFromPDF(to document: PDFDocument, sourceURL: URL, pageIndices: Set<Int>?) -> Bool {
+    static func addPagesFromPDF(to document: PDFDocument, sourceURL: URL, pageIndices: Set<Int>?, insertAt: Int?) -> Bool {
         guard let sourceDocument = PDFDocument(url: sourceURL) else { return false }
         
         let indicesToAdd: [Int]
@@ -59,9 +51,12 @@ class PDFService {
             indicesToAdd = Array(0..<sourceDocument.pageCount)
         }
         
+        let insertPosition = insertAt ?? document.pageCount
+        
         for index in indicesToAdd {
-            guard let page = sourceDocument.page(at: index) else { continue }
-            document.insert(page, at: document.pageCount)
+            guard let page = sourceDocument.page(at: index),
+                  let copiedPage = page.copy() as? PDFPage else { continue }
+            document.insert(copiedPage, at: insertPosition)
         }
         
         return true

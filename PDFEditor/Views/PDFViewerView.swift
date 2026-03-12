@@ -3,30 +3,29 @@ import PDFKit
 
 struct PDFViewerView: View {
     @ObservedObject var wrapper: PDFDocumentWrapper
+    @Binding var showThumbnails: Bool
     @State private var zoomLevel: CGFloat = 1.0
-    @State private var showThumbnailStrip: Bool = false
     
     var body: some View {
         VStack(spacing: 0) {
             zoomToolbar
             Divider()
             
-            GeometryReader { geometry in
+            GeometryReader { _ in
                 ZStack(alignment: .topLeading) {
                     PDFKitView(document: wrapper.document, zoomLevel: $zoomLevel)
                     
-                    if showThumbnailStrip {
-                        ThumbnailStripView(document: wrapper.document, currentPage: $wrapper.currentPageIndex)
+                    if showThumbnails {
+                        ThumbnailStripView(
+                            document: wrapper.document, 
+                            currentPage: $wrapper.currentPageIndex,
+                            selectedPages: $wrapper.selectedPages
+                        )
                         .frame(width: 120)
                         .background(Color(nsColor: .windowBackgroundColor).opacity(0.95))
                         .transition(.move(edge: .leading))
                     }
                 }
-            }
-        }
-        .onHover { hovering in
-            withAnimation(.easeInOut(duration: 0.2)) {
-                showThumbnailStrip = hovering
             }
         }
     }
@@ -127,6 +126,7 @@ struct PDFKitView: NSViewRepresentable {
 struct ThumbnailStripView: View {
     let document: PDFDocument
     @Binding var currentPage: Int
+    @Binding var selectedPages: Set<Int>
     
     var body: some View {
         ScrollView {
@@ -135,7 +135,8 @@ struct ThumbnailStripView: View {
                     ThumbnailItem(
                         document: document,
                         pageIndex: index,
-                        isSelected: index == currentPage
+                        isSelected: index == currentPage || selectedPages.contains(index),
+                        isMultiSelected: selectedPages.contains(index)
                     )
                     .onTapGesture {
                         currentPage = index
@@ -151,6 +152,7 @@ struct ThumbnailItem: View {
     let document: PDFDocument
     let pageIndex: Int
     let isSelected: Bool
+    let isMultiSelected: Bool
     
     @State private var thumbnailImage: NSImage?
     @EnvironmentObject var appViewModel: AppViewModel
@@ -165,7 +167,7 @@ struct ThumbnailItem: View {
                     .cornerRadius(4)
                     .overlay(
                         RoundedRectangle(cornerRadius: 4)
-                            .stroke(isSelected ? Color.accentColor : Color.clear, lineWidth: 2)
+                            .stroke(isSelected || isMultiSelected ? Color.accentColor : Color.clear, lineWidth: 2)
                     )
             } else {
                 Rectangle()
@@ -183,12 +185,28 @@ struct ThumbnailItem: View {
             loadThumbnail()
         }
         .contextMenu {
+            Button("Delete") {
+                appViewModel.deletePage(at: pageIndex)
+            }
+            
+            Divider()
+            
             Button("Extract as Image...") {
                 appViewModel.extractAsImage(from: pageIndex)
             }
             
             Button("Extract as PDF...") {
                 appViewModel.extractPagesAsPDF(indices: [pageIndex])
+            }
+            
+            Divider()
+            
+            Button("Rotate 90° Clockwise") {
+                appViewModel.rotatePage(at: pageIndex, degrees: 90)
+            }
+            
+            Button("Rotate 90° Counter-clockwise") {
+                appViewModel.rotatePage(at: pageIndex, degrees: -90)
             }
         }
     }

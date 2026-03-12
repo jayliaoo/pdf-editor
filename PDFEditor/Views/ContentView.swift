@@ -3,11 +3,12 @@ import UniformTypeIdentifiers
 
 struct ContentView: View {
     @EnvironmentObject var appViewModel: AppViewModel
+    @State private var showThumbnails: Bool = false
     
     var body: some View {
         VStack(spacing: 0) {
             if !appViewModel.documents.isEmpty {
-                TabBarView()
+                TabBarView(showThumbnails: $showThumbnails)
                 Divider()
             }
             
@@ -16,7 +17,7 @@ struct ContentView: View {
             } else {
                 if let selectedId = appViewModel.selectedDocumentId,
                    let wrapper = appViewModel.documents.first(where: { $0.id == selectedId }) {
-                    DocumentView(wrapper: wrapper)
+                    DocumentView(wrapper: wrapper, showThumbnails: $showThumbnails)
                 }
             }
         }

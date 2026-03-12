@@ -49,10 +49,27 @@ class AppViewModel: ObservableObject {
         wrapper.isModified = true
     }
     
+    func deletePage(at index: Int) {
+        guard let wrapper = selectedDocument else { return }
+        
+        _ = PDFService.deletePages(from: wrapper.document, indices: [index])
+        wrapper.isModified = true
+    }
+    
+    func rotatePage(at index: Int, degrees: Int) {
+        guard let wrapper = selectedDocument,
+              let page = wrapper.document.page(at: index) else { return }
+        
+        PDFService.rotatePage(page, degrees: degrees)
+        wrapper.isModified = true
+    }
+    
     func addBlankPage() {
         guard let wrapper = selectedDocument else { return }
         
-        let success = PDFService.addBlankPage(to: wrapper.document, at: nil)
+        let insertPosition = showPagePositionDialog(currentPage: wrapper.currentPageIndex, totalPages: wrapper.document.pageCount)
+        
+        let success = PDFService.addBlankPage(to: wrapper.document, at: insertPosition)
         if success {
             wrapper.isModified = true
         }
@@ -69,7 +86,12 @@ class AppViewModel: ObservableObject {
         panel.begin { [weak self] response in
             guard response == .OK, let url = panel.url else { return }
             DispatchQueue.main.async {
-                let success = PDFService.addImageAsPage(to: wrapper.document, imageURL: url, at: nil)
+                let insertPosition = self?.showPagePositionDialog(
+                    currentPage: wrapper.currentPageIndex,
+                    totalPages: wrapper.document.pageCount
+                )
+                
+                let success = PDFService.addImageAsPage(to: wrapper.document, imageURL: url, at: insertPosition)
                 if success {
                     wrapper.isModified = true
                 } else {
@@ -91,7 +113,12 @@ class AppViewModel: ObservableObject {
         panel.begin { [weak self] response in
             guard response == .OK, let url = panel.url else { return }
             DispatchQueue.main.async {
-                let success = PDFService.addPagesFromPDF(to: wrapper.document, sourceURL: url, pageIndices: nil)
+                let insertPosition = self?.showPagePositionDialog(
+                    currentPage: wrapper.currentPageIndex,
+                    totalPages: wrapper.document.pageCount
+                )
+                
+                let success = PDFService.addPagesFromPDF(to: wrapper.document, sourceURL: url, pageIndices: nil, insertAt: insertPosition ?? wrapper.document.pageCount)
                 if success {
                     wrapper.isModified = true
                 } else {
@@ -99,6 +126,85 @@ class AppViewModel: ObservableObject {
                     self?.showError = true
                 }
             }
+        }
+    }
+    
+    private func showPagePositionDialog(currentPage: Int, totalPages: Int) -> Int? {
+        let alert = NSAlert()
+        alert.messageText = "Insert Position"
+        alert.informativeText = "Choose where to insert the new page(s):"
+        alert.alertStyle = .informational
+        alert.addButton(withTitle: "After Current Page")
+        alert.addButton(withTitle: "Before Current Page")
+        alert.addButton(withTitle: "At End")
+        alert.addButton(withTitle: "Cancel")
+        
+        let response = alert.runModal()
+        
+        switch response {
+        case .alertFirstButtonReturn:
+            return currentPage + 1
+        case .alertSecondButtonReturn:
+            return currentPage
+        case .alertThirdButtonReturn:
+            return totalPages
+        default:
+            return nil
+        }
+    }
+    
+    func showPageRangeDialog(completion: @escaping (Set<Int>?) -> Void) {
+        let alert = NSAlert()
+        alert.messageText = "Select Page Range"
+        alert.informativeText = "Enter page range (e.g., 1-5) or leave empty for all pages:"
+        alert.alertStyle = .informational
+        alert.addButton(withTitle: "Extract")
+        alert.addButton(withTitle: "Cancel")
+        
+        let input = NSTextField(frame: NSRect(x: 0, y: 0, width: 200, height: 24))
+        input.placeholderString = "e.g., 1-5 or 1,3,5"
+        alert.accessoryView = input
+        
+        let response = alert.runModal()
+        
+        if response == .alertFirstButtonReturn {
+            let text = input.stringValue
+            guard let wrapper = selectedDocument else {
+                completion(nil)
+                return
+            }
+            
+            let totalPages = wrapper.document.pageCount
+            
+            if text.isEmpty {
+                completion(Set(0..<totalPages))
+                return
+            }
+            
+            var indices = Set<Int>()
+            
+            let parts = text.components(separatedBy: ",")
+            for part in parts {
+                let trimmed = part.trimmingCharacters(in: .whitespaces)
+                if trimmed.contains("-") {
+                    let rangeParts = trimmed.components(separatedBy: "-")
+                    if rangeParts.count == 2,
+                       let start = Int(rangeParts[0].trimmingCharacters(in: .whitespaces)),
+                       let end = Int(rangeParts[1].trimmingCharacters(in: .whitespaces)) {
+                        for i in start...end {
+                            if i > 0 && i <= totalPages {
+                                indices.insert(i - 1)
+                            }
+                        }
+                    }
+                } else if let page = Int(trimmed), page > 0 && page <= totalPages {
+                    indices.insert(page - 1)
+                }
+            }
+            
+            completion(indices.isEmpty ? nil : indices)
+        } else {
+            completion(nil)
         }
     }
     
@@ -157,6 +263,13 @@ class AppViewModel: ObservableObject {
     }
     
     func extractPagesAsPDF(indices: Set<Int>) {
+        showPageRangeDialog { [weak self] selectedIndices in
+            guard let indices = selectedIndices else { return }
+            self?.performExtractPDF(indices: indices)
+        }
+    }
+    
+    private func performExtractPDF(indices: Set<Int>) {
         guard let wrapper = selectedDocument,
               let extractedDoc = PDFService.extractAsPDF(from: wrapper.document, indices: indices) else {
             showErrorAlert(message: "Failed to extract pages")

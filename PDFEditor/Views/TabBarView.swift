@@ -2,8 +2,36 @@ import SwiftUI
 
 struct TabBarView: View {
     @EnvironmentObject var appViewModel: AppViewModel
+    @Binding var showThumbnails: Bool
     
     var body: some View {
+        HStack(spacing: 0) {
+            toolbarButtons
+                .padding(.leading, 8)
+            
+            Divider()
+                .frame(height: 20)
+            
+            tabScrollView
+        }
+        .frame(height: 36)
+        .background(Color(nsColor: .windowBackgroundColor))
+    }
+    
+    private var toolbarButtons: some View {
+        HStack(spacing: 4) {
+            Button(action: {
+                showThumbnails.toggle()
+            }) {
+                Image(systemName: showThumbnails ? "sidebar.left.fill" : "sidebar.left")
+                    .font(.system(size: 12))
+            }
+            .buttonStyle(.borderless)
+            .help("Toggle Thumbnail Strip")
+        }
+    }
+    
+    private var tabScrollView: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 2) {
                 ForEach(appViewModel.documents) { wrapper in
@@ -21,8 +49,6 @@ struct TabBarView: View {
             .padding(.horizontal, 8)
             .padding(.vertical, 4)
         }
-        .frame(height: 32)
-        .background(Color(nsColor: .windowBackgroundColor))
     }
 }
 
