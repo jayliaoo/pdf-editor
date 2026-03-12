@@ -1,0 +1,26 @@
+# Xcode
+.DS_Store
+build/
+*.xcodeproj
+*.xcworkspace
+xcuserdata/
+*.xcuserstate
+
+# Swift
+.swiftpm/
+Packages/
+DerivedData/
+*.ipa
+
+# macOS
+*.app
+*.dmg
+.DS_Store
+
+# IDE
+.idea/
+.vscode/
+*.sublime-*
+
+# Superpowers
+.superpowers/
