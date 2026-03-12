@@ -1,17 +1,15 @@
 import SwiftUI
 
 struct TabBarView: View {
-    @EnvironmentObject var appViewModel: AppViewModel
-    @Binding var showThumbnails: Bool
-    
+    @ObservedObject var appViewModel: AppViewModel
+
     var body: some View {
         HStack(spacing: 0) {
             toolbarButtons
-                .padding(.leading, 8)
-            
+
             Divider()
                 .frame(height: 20)
-            
+
             tabScrollView
         }
         .frame(height: 36)
@@ -20,16 +18,17 @@ struct TabBarView: View {
     
     private var toolbarButtons: some View {
         HStack(spacing: 4) {
-            Button(action: {
-                showThumbnails.toggle()
-            }) {
-                Image(systemName: showThumbnails ? "sidebar.left.fill" : "sidebar.left")
-                    .font(.system(size: 12))
-            }
-            .buttonStyle(.borderless)
-            .help("Toggle Thumbnail Strip")
+            Image(systemName: appViewModel.showThumbnails ? "sidebar.left.fill" : "sidebar.left")
+                .font(.system(size: 12))
+                .foregroundStyle(Color.primary)
+                .frame(width: 24, height: 24)
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    appViewModel.showThumbnails.toggle()
+                }
+                .help("Toggle Thumbnail Strip")
         }
-        .frame(width: 30)
+        .padding(.leading, 8)
     }
     
     private var tabScrollView: some View {

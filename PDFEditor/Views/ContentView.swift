@@ -3,22 +3,20 @@ import UniformTypeIdentifiers
 
 struct ContentView: View {
     @EnvironmentObject var appViewModel: AppViewModel
-    @State private var showThumbnails: Bool = false
-    
+
     var body: some View {
         VStack(spacing: 0) {
             if !appViewModel.documents.isEmpty {
-                TabBarView(showThumbnails: $showThumbnails)
+                TabBarView(appViewModel: appViewModel)
+                    .zIndex(1)
                 Divider()
             }
-            
+
             if appViewModel.documents.isEmpty {
                 emptyStateView
-            } else {
-                if let selectedId = appViewModel.selectedDocumentId,
-                   let wrapper = appViewModel.documents.first(where: { $0.id == selectedId }) {
-                    DocumentView(wrapper: wrapper, showThumbnails: $showThumbnails)
-                }
+            } else if let selectedId = appViewModel.selectedDocumentId,
+                      let wrapper = appViewModel.documents.first(where: { $0.id == selectedId }) {
+                DocumentView(wrapper: wrapper, appViewModel: appViewModel)
             }
         }
         .onDrop(of: [.pdf, .fileURL], isTargeted: nil) { providers in
@@ -26,12 +24,12 @@ struct ContentView: View {
             return true
         }
     }
-    
+
     private func handleDrop(providers: [NSItemProvider]) {
         for provider in providers {
             provider.loadItem(forTypeIdentifier: UTType.pdf.identifier, options: nil) { item, error in
                 guard error == nil else { return }
-                
+
                 if let data = item as? Data,
                    let url = URL(dataRepresentation: data, relativeTo: nil) {
                     DispatchQueue.main.async {
@@ -45,7 +43,7 @@ struct ContentView: View {
             }
         }
     }
-    
+
     private var emptyStateView: some View {
         VStack(spacing: 16) {
             Image(systemName: "doc.text")

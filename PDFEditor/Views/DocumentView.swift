@@ -2,9 +2,9 @@ import SwiftUI
 
 struct DocumentView: View {
     @ObservedObject var wrapper: PDFDocumentWrapper
-    @Binding var showThumbnails: Bool
-    
+    @ObservedObject var appViewModel: AppViewModel
+
     var body: some View {
-        PDFViewerView(wrapper: wrapper, showThumbnails: $showThumbnails)
+        PDFViewerView(wrapper: wrapper, appViewModel: appViewModel)
     }
 }

@@ -9,6 +9,7 @@ class AppViewModel: ObservableObject {
     @Published var errorMessage: String?
     @Published var showError: Bool = false
     @Published var zoomLevel: CGFloat = 1.0
+    @Published var showThumbnails: Bool = false
     
     var selectedDocument: PDFDocumentWrapper? {
         guard let id = selectedDocumentId else { return nil }

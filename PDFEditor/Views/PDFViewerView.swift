@@ -3,33 +3,32 @@ import PDFKit
 
 struct PDFViewerView: View {
     @ObservedObject var wrapper: PDFDocumentWrapper
-    @Binding var showThumbnails: Bool
+    @ObservedObject var appViewModel: AppViewModel
     @State private var zoomLevel: CGFloat = 1.0
-    
+
     var body: some View {
         VStack(spacing: 0) {
             zoomToolbar
             Divider()
-            
-            GeometryReader { _ in
-                ZStack(alignment: .topLeading) {
-                    PDFKitView(document: wrapper.document, zoomLevel: $zoomLevel)
-                    
-                    if showThumbnails {
-                        ThumbnailStripView(
-                            wrapper: wrapper,
-                            currentPage: $wrapper.currentPageIndex,
-                            selectedPages: $wrapper.selectedPages
-                        )
-                        .frame(width: 120)
-                        .background(Color(nsColor: .windowBackgroundColor).opacity(0.95))
-                        .transition(.move(edge: .leading))
-                    }
+
+            HStack(spacing: 0) {
+                if appViewModel.showThumbnails {
+                    ThumbnailStripView(
+                        wrapper: wrapper,
+                        currentPage: $wrapper.currentPageIndex,
+                        selectedPages: $wrapper.selectedPages
+                    )
+                    .frame(width: 120)
+                    .background(Color(nsColor: .windowBackgroundColor).opacity(0.95))
+                    .environmentObject(appViewModel)
                 }
+
+                PDFKitView(document: wrapper.document, zoomLevel: $zoomLevel)
+                    .clipped()
             }
         }
     }
-    
+
     private var zoomToolbar: some View {
         HStack {
             Button(action: { zoomLevel = max(0.25, zoomLevel - 0.25) }) {
