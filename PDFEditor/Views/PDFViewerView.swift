@@ -153,6 +153,7 @@ struct ThumbnailItem: View {
     let isSelected: Bool
     
     @State private var thumbnailImage: NSImage?
+    @EnvironmentObject var appViewModel: AppViewModel
     
     var body: some View {
         VStack(spacing: 4) {
@@ -180,6 +181,15 @@ struct ThumbnailItem: View {
         }
         .onAppear {
             loadThumbnail()
+        }
+        .contextMenu {
+            Button("Extract as Image...") {
+                appViewModel.extractAsImage(from: pageIndex)
+            }
+            
+            Button("Extract as PDF...") {
+                appViewModel.extractPagesAsPDF(indices: [pageIndex])
+            }
         }
     }
     

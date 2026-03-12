@@ -1,4 +1,5 @@
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct ContentView: View {
     @EnvironmentObject var appViewModel: AppViewModel
@@ -16,6 +17,29 @@ struct ContentView: View {
                 if let selectedId = appViewModel.selectedDocumentId,
                    let wrapper = appViewModel.documents.first(where: { $0.id == selectedId }) {
                     DocumentView(wrapper: wrapper)
+                }
+            }
+        }
+        .onDrop(of: [.pdf, .fileURL], isTargeted: nil) { providers in
+            handleDrop(providers: providers)
+            return true
+        }
+    }
+    
+    private func handleDrop(providers: [NSItemProvider]) {
+        for provider in providers {
+            provider.loadItem(forTypeIdentifier: UTType.pdf.identifier, options: nil) { item, error in
+                guard error == nil else { return }
+                
+                if let data = item as? Data,
+                   let url = URL(dataRepresentation: data, relativeTo: nil) {
+                    DispatchQueue.main.async {
+                        appViewModel.handleDroppedFiles([url])
+                    }
+                } else if let url = item as? URL {
+                    DispatchQueue.main.async {
+                        appViewModel.handleDroppedFiles([url])
+                    }
                 }
             }
         }
