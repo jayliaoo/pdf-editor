@@ -11,6 +11,7 @@
 		10B49FC5C4EFCE9743FCBEB8 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8846C7759E69ACB4280AB429 /* ContentView.swift */; };
 		B8E223CD891333F60E417294 /* AppViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 261D0CFFE894AF674AD35245 /* AppViewModel.swift */; };
 		F891EC0175B5660289BCA014 /* PDFEditorApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01B3C3CBE6C8BE61CE19B80A /* PDFEditorApp.swift */; };
+		TAB1EWV1EW123456789AB1C /* TabBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = TAB1EWV1EW123456789AB2C /* TabBarView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -18,6 +19,7 @@
 		261D0CFFE894AF674AD35245 /* AppViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppViewModel.swift; sourceTree = "<group>"; };
 		75CA7A84A31D514D9A1FCEA7 /* DocumentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentView.swift; sourceTree = "<group>"; };
 		8846C7759E69ACB4280AB429 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		TAB1EWV1EW123456789AB2C /* TabBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabBarView.swift; sourceTree = "<group>"; };
 		CF8EF4A5C54A1F293F4F66DC /* PDFEditor.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PDFEditor.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -37,6 +39,7 @@
 			children = (
 				8846C7759E69ACB4280AB429 /* ContentView.swift */,
 				75CA7A84A31D514D9A1FCEA7 /* DocumentView.swift */,
+				TAB1EWV1EW123456789AB2C /* TabBarView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -127,6 +130,7 @@
 				10B49FC5C4EFCE9743FCBEB8 /* ContentView.swift in Sources */,
 				00CA9A8F5565AFF62430D870 /* DocumentView.swift in Sources */,
 				F891EC0175B5660289BCA014 /* PDFEditorApp.swift in Sources */,
+				TAB1EWV1EW123456789AB1C /* TabBarView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

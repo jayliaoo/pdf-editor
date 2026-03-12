@@ -22,6 +22,16 @@ class AppViewModel: ObservableObject {
         }
     }
     
+    func closeDocument(_ wrapper: PDFDocumentWrapper) {
+        if wrapper.isModified {
+            // Show save prompt - implement later
+        }
+        documents.removeAll { $0.id == wrapper.id }
+        if selectedDocumentId == wrapper.id {
+            selectedDocumentId = documents.first?.id
+        }
+    }
+    
     private func processSelectedURLs(_ urls: [URL]) {
         for url in urls {
             if let pdfDocument = PDFDocument(url: url) {

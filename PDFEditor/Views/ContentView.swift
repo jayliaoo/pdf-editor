@@ -5,6 +5,11 @@ struct ContentView: View {
     
     var body: some View {
         VStack(spacing: 0) {
+            if !appViewModel.documents.isEmpty {
+                TabBarView()
+                Divider()
+            }
+            
             if appViewModel.documents.isEmpty {
                 emptyStateView
             } else {
