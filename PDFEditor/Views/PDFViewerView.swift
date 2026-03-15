@@ -23,7 +23,7 @@ struct PDFViewerView: View {
                     .environmentObject(appViewModel)
                 }
 
-                PDFKitView(document: wrapper.document, zoomLevel: $zoomLevel)
+                PDFKitView(document: wrapper.document, zoomLevel: $zoomLevel, currentPage: $wrapper.currentPageIndex)
                     .clipped()
             }
         }
@@ -76,6 +76,7 @@ struct PDFViewerView: View {
 struct PDFKitView: NSViewRepresentable {
     let document: PDFDocument
     @Binding var zoomLevel: CGFloat
+    @Binding var currentPage: Int
     
     func makeNSView(context: Context) -> PDFView {
         let pdfView = PDFView()
@@ -93,12 +94,23 @@ struct PDFKitView: NSViewRepresentable {
             object: pdfView
         )
         
+        NotificationCenter.default.addObserver(
+            context.coordinator,
+            selector: #selector(Coordinator.pdfViewChangedPage(_:)),
+            name: .PDFViewPageChanged,
+            object: pdfView
+        )
+        
         return pdfView
     }
     
     func updateNSView(_ pdfView: PDFView, context: Context) {
         if abs(pdfView.scaleFactor - zoomLevel) > 0.01 {
             pdfView.scaleFactor = zoomLevel
+        }
+        
+        if let page = document.page(at: currentPage) {
+            pdfView.go(to: page)
         }
     }
     
@@ -117,6 +129,15 @@ struct PDFKitView: NSViewRepresentable {
             guard let pdfView = notification.object as? PDFView else { return }
             DispatchQueue.main.async {
                 self.parent.zoomLevel = pdfView.scaleFactor
+            }
+        }
+        
+        @objc func pdfViewChangedPage(_ notification: Notification) {
+            guard let pdfView = notification.object as? PDFView else { return }
+            if let currentPage = pdfView.currentPage {
+                DispatchQueue.main.async {
+                    self.parent.currentPage = pdfView.document!.index(for: currentPage)
+                }
             }
         }
     }
